@@ -1,0 +1,409 @@
+﻿<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Product Image Studio - Preview</title>
+<style>
+:root {
+  --p-bg: #f6f6f7; --p-surface: #ffffff; --p-text: #202223;
+  --p-text-subdued: #6d7175; --p-border: #d2d5d8; --p-action: #2c6ecb;
+  --p-action-hover: #1f5199; --p-success: #007f5f; --p-warning: #b98900;
+  --p-critical: #d72c0d; --p-radius: 8px; --p-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "Segoe UI", system-ui, -apple-system, sans-serif; background: var(--p-bg); color: var(--p-text); }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+nav { background: #1c1e21; color: white; padding: 0 20px; display: flex; justify-content: space-between; align-items: stretch; }
+nav .nav-inner { display: flex; gap: 0; align-items: stretch; }
+nav a { color: #a3a7ab; text-decoration: none; padding: 14px 20px; font-size: 14px; border-bottom: 3px solid transparent; transition: all 0.2s; cursor: pointer; }
+nav a:hover, nav a.active { color: white; border-bottom-color: var(--p-action); }
+.lang-switch { display: flex; align-items: center; gap: 8px; padding: 0 16px; }
+.lang-switch button { padding: 4px 12px; border-radius: 4px; border: 1px solid #555; background: transparent; color: #a3a7ab; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.lang-switch button.active { background: var(--p-action); color: white; border-color: var(--p-action); }
+.lang-switch button:hover { border-color: #aaa; color: white; }
+.titlebar { background: white; border-bottom: 1px solid var(--p-border); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+.titlebar h1 { font-size: 20px; font-weight: 600; }
+.card { background: white; border-radius: var(--p-radius); box-shadow: var(--p-shadow); padding: 20px; margin-bottom: 16px; }
+.card h2 { font-size: 16px; margin-bottom: 16px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid transparent; text-decoration: none; transition: all 0.15s; }
+.btn-primary { background: var(--p-action); color: white; }
+.btn-primary:hover { background: var(--p-action-hover); }
+.btn-secondary { background: white; color: var(--p-text); border-color: var(--p-border); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.flex { display: flex; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.gap-8 { gap: 8px; } .gap-12 { gap: 12px; } .gap-16 { gap: 16px; } .mt-16 { margin-top: 16px; }
+.progress { height: 8px; background: #e3e5e7; border-radius: 4px; overflow: hidden; }
+.progress-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+.progress-bar.success { background: var(--p-success); }
+.progress-bar.warning { background: var(--p-warning); }
+.stat-label { font-size: 28px; font-weight: 700; }
+.stat-desc { font-size: 13px; color: var(--p-text-subdued); margin-top: 4px; }
+.banner { padding: 12px 16px; border-radius: var(--p-radius); font-size: 14px; margin-bottom: 16px; }
+.banner-warning { background: #fff3db; border: 1px solid #e7b842; color: #73590d; }
+.banner a { color: var(--p-action); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+.badge-info { background: #e5effd; color: #1d4e89; }
+.badge-success { background: #eaf5ed; color: #1d5834; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 12px; border: 1px solid var(--p-border); border-radius: 6px; font-size: 14px; font-family: inherit; }
+.form-group textarea { min-height: 80px; resize: vertical; }
+.form-group select { background: white; cursor: pointer; }
+.img-placeholder { background: #f1f1f2; border-radius: var(--p-radius); display: flex; align-items: center; justify-content: center; min-height: 320px; color: var(--p-text-subdued); font-size: 15px; flex-direction: column; gap: 8px; }
+.img-placeholder .icon { font-size: 48px; }
+.tips { background: #f6f7f9; border-radius: var(--p-radius); padding: 14px 18px; }
+.tips h4 { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.tips p { font-size: 12px; color: var(--p-text-subdued); line-height: 1.8; }
+.gallery-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px 6px 0 0; background: #f1f1f2; }
+.plan-card { background: white; border-radius: var(--p-radius); box-shadow: var(--p-shadow); padding: 24px; text-align: center; position: relative; }
+.plan-card.current { border: 2px solid var(--p-action); }
+.plan-card h3 { font-size: 18px; margin-bottom: 4px; }
+.plan-card .price { font-size: 32px; font-weight: 700; margin: 8px 0 16px; }
+.plan-card ul { list-style: none; text-align: left; margin-bottom: 16px; }
+.plan-card ul li { padding: 6px 0; font-size: 13px; color: var(--p-text-subdued); }
+.plan-card ul li::before { content: "✓ "; color: var(--p-success); font-weight: bold; }
+.plan-card .btn { width: 100%; justify-content: center; }
+.page-section { display: none; }
+.page-section.active { display: block; }
+.spinner { width: 40px; height: 40px; border: 3px solid #e3e5e7; border-top-color: var(--p-action); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.generation-result { text-align: center; }
+.generation-result img { max-width: 100%; border-radius: var(--p-radius); }
+.highlight-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: var(--p-radius); padding: 32px; text-align: center; margin-bottom: 20px; }
+.highlight-box h2 { font-size: 24px; margin-bottom: 12px; }
+.highlight-box p { font-size: 15px; opacity: 0.9; max-width: 700px; margin: 0 auto; line-height: 1.8; }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 20px; }
+.feature-item { background: rgba(255,255,255,0.15); padding: 14px; border-radius: 8px; text-align: center; }
+.feature-item .feat-icon { font-size: 28px; margin-bottom: 6px; }
+.feature-item .feat-text { font-size: 13px; }
+.current-tag { position: absolute; top: 12px; right: 12px; background: #eaf5ed; color: #1d5834; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="active" data-key="nav_dashboard" onclick="showPage('dashboard', this)">Dashboard</a>
+    <a href="#" data-key="nav_generate" onclick="showPage('generate', this)">AI Generate</a>
+    <a href="#" data-key="nav_history" onclick="showPage('history', this)">History</a>
+    <a href="#" data-key="nav_settings" onclick="showPage('settings', this)">Settings</a>
+    <a href="#" data-key="nav_about" onclick="showPage('about', this)">About</a>
+  </div>
+  <div class="lang-switch">
+    <button onclick="switchLang('en')" id="btn-en">EN</button>
+    <button onclick="switchLang('zh')" id="btn-zh" class="active">中文</button>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ============ ABOUT ============ -->
+<div id="about" class="page-section">
+  <div class="highlight-box">
+    <h2 data-key="about_title">AI Product Image Studio</h2>
+    <p data-key="about_desc">一款 Shopify 插件，让电商卖家通过 AI 免费生成专业商品图——无需摄影师。基于 Pollinations.ai（完全免费，无需 API Key）。</p>
+    <div class="feature-grid">
+      <div class="feature-item"><div class="feat-icon">🎨</div><div class="feat-text" data-key="feat1">3 generation modes:<br>Standard / Lifestyle / Background</div></div>
+      <div class="feature-item"><div class="feat-icon">📦</div><div class="feat-text" data-key="feat2">Select Shopify product<br>auto-fill context</div></div>
+      <div class="feature-item"><div class="feat-icon">💳</div><div class="feat-text" data-key="feat3">Free / Pro / Business<br>pricing tiers</div></div>
+      <div class="feature-item"><div class="feat-icon">📊</div><div class="feat-text" data-key="feat4">Usage tracking<br>credit system</div></div>
+      <div class="feature-item"><div class="feat-icon">🖼️</div><div class="feat-text" data-key="feat5">Generation history<br>gallery view</div></div>
+      <div class="feature-item"><div class="feat-icon">⚡</div><div class="feat-text" data-key="feat6">Embedded in Shopify Admin<br>Polaris UI native</div></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h2 data-key="how_title">How It Works</h2>
+      <p style="line-height:1.8;color:var(--p-text-subdued);" data-key="how_text">
+        <strong>1. Install</strong> the app from Shopify App Store<br>
+        <strong>2. Connect</strong> your Pollinations.ai API key<br>
+        <strong>3. Select</strong> a product & describe the scene<br>
+        <strong>4. Generate</strong> — AI creates a pro product photo<br>
+        <strong>5. Download</strong> & upload to your product listing
+      </p>
+    </div>
+    <div class="card">
+      <h2 data-key="tech_title">Tech Stack</h2>
+      <p style="line-height:1.8;color:var(--p-text-subdued);" data-key="tech_text">
+        Framework: Shopify Remix + React<br>
+        UI: Polaris Design System<br>
+        AI: Pollinations.ai (Free) API<br>
+        Database: Prisma + SQLite<br>
+        Auth: Shopify OAuth 2.0<br>
+        Deployment: Shopify Cloud / Vercel
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div id="dashboard" class="page-section active">
+  <div class="titlebar">
+    <h1 data-key="dashboard_title">AI Product Image Studio</h1>
+    <a href="#" class="btn btn-primary" onclick="showPage('generate', document.querySelectorAll('nav a')[1])" data-key="dashboard_cta">Generate New Image</a>
+  </div>
+
+  <div class="banner banner-warning" data-key="dashboard_banner">
+    You have 2 free generations left this month. <a href="#" onclick="showPage('settings', document.querySelectorAll('nav a')[3])">Upgrade to Pro</a> for 100 generations/month.
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <div class="card">
+        <h2 data-key="dashboard_credits">Credits Usage</h2>
+        <div class="flex-between" style="margin-bottom:8px;">
+          <span style="font-size:14px;color:var(--p-text-subdued);">Free Plan ($0/month)</span>
+          <span style="font-size:14px;font-weight:600;">3 / 5 used</span>
+        </div>
+        <div class="progress"><div class="progress-bar warning" style="width:60%;"></div></div>
+        <div style="font-size:12px;color:var(--p-text-subdued);margin-top:6px;" data-key="dashboard_reset">2 remaining · Resets in 23 days</div>
+      </div>
+      <div class="card">
+        <h2 data-key="dashboard_stats">Quick Stats</h2>
+        <div class="flex gap-16" style="flex-wrap:wrap;">
+          <div style="min-width:130px;"><div class="stat-label">12</div><div class="stat-desc" data-key="stat_total">Total Generations</div></div>
+          <div style="min-width:130px;"><div class="stat-label">8</div><div class="stat-desc" data-key="stat_month">This Month</div></div>
+          <div style="min-width:130px;"><div class="stat-label">2</div><div class="stat-desc" data-key="stat_credits">Credits Left</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2 data-key="dashboard_recent">Recent Generations</h2>
+      <div class="grid-4">
+        <div><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23f0f4ff' width='200' height='200'/%3E%3Ctext x='100' y='100' text-anchor='middle' dy='.3em' fill='%2364748b' font-size='40'%3E👜%3C/text%3E%3C/svg%3E" class="gallery-img"><div style="padding:8px;font-size:12px;"><strong>Leather Bag</strong><br><span style="color:var(--p-text-subdued);">on marble counter</span></div></div>
+        <div><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23fff5f0' width='200' height='200'/%3E%3Ctext x='100' y='100' text-anchor='middle' dy='.3em' fill='%23b85c3a' font-size='40'%3E👟%3C/text%3E%3C/svg%3E" class="gallery-img"><div style="padding:8px;font-size:12px;"><strong>Running Shoes</strong><br><span style="color:var(--p-text-subdued);">lifestyle outdoor</span></div></div>
+        <div><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23f0fff4' width='200' height='200'/%3E%3Ctext x='100' y='100' text-anchor='middle' dy='.3em' fill='%233d7a4f' font-size='40'%3E💍%3C/text%3E%3C/svg%3E" class="gallery-img"><div style="padding:8px;font-size:12px;"><strong>Silver Ring</strong><br><span style="color:var(--p-text-subdued);">on velvet</span></div></div>
+        <div><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23fff0f7' width='200' height='200'/%3E%3Ctext x='100' y='100' text-anchor='middle' dy='.3em' fill='%23993d6e' font-size='40'%3E👗%3C/text%3E%3C/svg%3E" class="gallery-img"><div style="padding:8px;font-size:12px;"><strong>Summer Dress</strong><br><span style="color:var(--p-text-subdued);">beach setting</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ GENERATE ============ -->
+<div id="generate" class="page-section">
+  <div class="titlebar">
+    <h1 data-key="gen_title">AI Image Generator</h1>
+    <span style="font-size:14px;color:var(--p-text-subdued);">2 credits remaining</span>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h2 data-key="gen_heading">Create AI Product Image</h2>
+      <div class="form-group"><label data-key="gen_product">Select Product (optional)</label><select><option data-key="gen_product_none">None (describe manually)</option><option>Leather Handbag</option><option>Running Shoes - Pro</option><option>Silver Pendant Necklace</option></select></div>
+      <div class="form-group"><label data-key="gen_name">Product Name (optional)</label><input type="text" placeholder="e.g., Leather Handbag" value="Leather Handbag"></div>
+      <div class="form-group"><label data-key="gen_mode">Generation Mode</label><select><option data-key="gen_mode_standard">Standard Product Photo</option><option data-key="gen_mode_lifestyle">Lifestyle Scene</option><option data-key="gen_mode_bg">Background Replacement</option></select></div>
+      <div class="form-group"><label data-key="gen_style">Image Style</label><select><option data-key="gen_style_natural">Natural & Realistic</option><option data-key="gen_style_vivid">Vivid & Bold</option></select></div>
+      <div class="form-group"><label data-key="gen_prompt">Describe the product image you want</label><textarea placeholder="e.g., floating in center on pure white background, front view, soft studio lighting"></textarea></div>
+      <div style="text-align:right;"><button class="btn btn-primary" onclick="simulateGenerate()" data-key="gen_btn">Generate Image</button></div>
+      <div class="tips mt-16"><h4 data-key="gen_tips_title">Tips for best results</h4>
+        <p data-key="gen_tip1">Be specific about angles: "front view", "45-degree angle", "top-down"</p>
+        <p data-key="gen_tip2">Describe lighting: "soft studio lighting", "natural sunlight", "dramatic shadow"</p>
+        <p data-key="gen_tip3">Include setting: "on white background", "in a modern kitchen", "outdoor garden"</p>
+      </div>
+    </div>
+    <div class="card">
+      <h2 data-key="gen_result">Generated Image</h2>
+      <div id="gen-preview" class="img-placeholder"><div class="icon">🎨</div><div data-key="gen_placeholder">Describe your product image and click Generate</div></div>
+      <div id="gen-result" style="display:none;" class="generation-result mt-16">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='480' viewBox='0 0 480 480'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23f8f9fa'/%3E%3Cstop offset='50%25' stop-color='%23e9ecef'/%3E%3Cstop offset='100%25' stop-color='%23f8f9fa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='480' height='480' rx='8'/%3E%3Crect x='120' y='60' width='240' height='280' rx='16' fill='%23d4a574'/%3E%3Crect x='140' y='80' width='200' height='240' rx='12' fill='%23c49660'/%3E%3Crect x='150' y='100' width='180' height='40' rx='4' fill='%23b8874a'/%3E%3Ccircle cx='240' cy='260' r='30' fill='%23d4a574' stroke='%23b8874a' stroke-width='2'/%3E%3Ccircle cx='240' cy='260' r='8' fill='%238b6914'/%3E%3Crect x='160' y='360' width='160' height='20' rx='10' fill='%23a07544'/%3E%3Ctext x='240' y='440' text-anchor='middle' font-family='sans-serif' font-size='12' fill='%23999'%3EAI Generated · Handbag on White Background%3C/text%3E%3C/svg%3E" alt="AI Generated">
+        <p style="font-size:12px;color:var(--p-text-subdued);margin-top:8px;" data-key="gen_ai_intent">AI interpretation: A premium leather handbag floating in center on pure white background</p>
+        <div class="flex gap-8" style="margin-top:12px;">
+          <button class="btn btn-primary" data-key="gen_download">Download Image</button>
+          <button class="btn btn-secondary" data-key="gen_open">Open Full Size</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HISTORY ============ -->
+<div id="history" class="page-section">
+  <div class="titlebar"><h1 data-key="history_title">Generation History</h1></div>
+  <div class="card" style="margin-bottom:16px;"><h2 data-key="history_count">Recent Generations (12)</h2></div>
+  <div class="grid-4">
+    <div class="card" style="padding:0;overflow:hidden;"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23f0f4ff' width='300' height='300'/%3E%3Ctext x='150' y='150' text-anchor='middle' dy='.3em' font-size='60'%3E👜%3C/text%3E%3C/svg%3E" class="gallery-img"><div style="padding:12px;"><div class="flex gap-8" style="margin-bottom:8px;flex-wrap:wrap;"><span class="badge badge-info">Leather Handbag</span><span class="badge badge-success">natural</span></div><div style="font-size:13px;margin-bottom:6px;">floating on pure white background, front view</div><div style="font-size:11px;color:var(--p-text-subdued);">2024-06-10</div></div></div>
+    <div class="card" style="padding:0;overflow:hidden;"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23fff5f0' width='300' height='300'/%3E%3Ctext x='150' y='150' text-anchor='middle' dy='.3em' font-size='60'%3E👟%3C/text%3E%3C/svg%3E" class="gallery-img"><div style="padding:12px;"><div class="flex gap-8" style="margin-bottom:8px;flex-wrap:wrap;"><span class="badge badge-info">Running Shoes</span><span class="badge badge-success">vivid</span></div><div style="font-size:13px;margin-bottom:6px;">in an urban street setting, dramatic shadows</div><div style="font-size:11px;color:var(--p-text-subdued);">2024-06-09</div></div></div>
+    <div class="card" style="padding:0;overflow:hidden;"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23f0fff4' width='300' height='300'/%3E%3Ctext x='150' y='150' text-anchor='middle' dy='.3em' font-size='60'%3E💍%3C/text%3E%3C/svg%3E" class="gallery-img"><div style="padding:12px;"><div class="flex gap-8" style="margin-bottom:8px;flex-wrap:wrap;"><span class="badge badge-info">Silver Ring</span><span class="badge badge-success">natural</span></div><div style="font-size:13px;margin-bottom:6px;">on dark velvet fabric, closeup macro</div><div style="font-size:11px;color:var(--p-text-subdued);">2024-06-08</div></div></div>
+    <div class="card" style="padding:0;overflow:hidden;"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23fff0f7' width='300' height='300'/%3E%3Ctext x='150' y='150' text-anchor='middle' dy='.3em' font-size='60'%3E👗%3C/text%3E%3C/svg%3E" class="gallery-img"><div style="padding:12px;"><div class="flex gap-8" style="margin-bottom:8px;flex-wrap:wrap;"><span class="badge badge-info">Summer Dress</span><span class="badge badge-success">vivid</span></div><div style="font-size:13px;margin-bottom:6px;">model wearing on tropical beach at sunset</div><div style="font-size:11px;color:var(--p-text-subdued);">2024-06-07</div></div></div>
+    <div class="card" style="padding:0;overflow:hidden;"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23fffbe6' width='300' height='300'/%3E%3Ctext x='150' y='150' text-anchor='middle' dy='.3em' font-size='60'%3E⌚%3C/text%3E%3C/svg%3E" class="gallery-img"><div style="padding:12px;"><div class="flex gap-8" style="margin-bottom:8px;flex-wrap:wrap;"><span class="badge badge-info">Luxury Watch</span></div><div style="font-size:13px;margin-bottom:6px;">on wooden desk, natural window light</div><div style="font-size:11px;color:var(--p-text-subdued);">2024-06-06</div></div></div>
+    <div class="card" style="padding:0;overflow:hidden;"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23f3f0ff' width='300' height='300'/%3E%3Ctext x='150' y='150' text-anchor='middle' dy='.3em' font-size='60'%3E🎧%3C/text%3E%3C/svg%3E" class="gallery-img"><div style="padding:12px;"><div class="flex gap-8" style="margin-bottom:8px;flex-wrap:wrap;"><span class="badge badge-info">Wireless Earbuds</span></div><div style="font-size:13px;margin-bottom:6px;">floating in air with color splash background</div><div style="font-size:11px;color:var(--p-text-subdued);">2024-06-05</div></div></div>
+  </div>
+</div>
+
+<!-- ============ SETTINGS ============ -->
+<div id="settings" class="page-section">
+  <div class="titlebar"><h1 data-key="settings_title">Settings & Billing</h1></div>
+  <div class="card" style="margin-bottom:20px;">
+    <h2 data-key="settings_current">Current Plan</h2>
+    <div style="background:#f6f7f9;padding:20px;border-radius:var(--p-radius);">
+      <div class="flex-between" style="margin-bottom:12px;"><span style="font-size:18px;font-weight:600;">Free</span><span style="font-size:18px;font-weight:600;">$0/month</span></div>
+      <div class="flex-between" style="margin-bottom:8px;"><span style="font-size:14px;" data-key="settings_usage">Usage this month</span><span style="font-size:14px;font-weight:600;">3 / 5 images</span></div>
+      <div class="progress"><div class="progress-bar warning" style="width:60%;"></div></div>
+      <div style="font-size:12px;color:var(--p-text-subdued);margin-top:6px;" data-key="settings_reset">2 remaining · Resets in 23 days</div>
+    </div>
+  </div>
+  <h2 style="margin-bottom:16px;" data-key="settings_plans">Available Plans</h2>
+  <div class="grid-3">
+    <div class="plan-card"><h3>Free</h3><p style="font-size:13px;color:var(--p-text-subdued);">Get started</p><div class="price">$0<span style="font-size:14px;color:var(--p-text-subdued);">/mo</span></div><ul><li>5 images/month</li><li>Standard quality</li><li>Basic styles</li></ul><button class="btn btn-secondary" disabled>Current Plan</button></div>
+    <div class="plan-card current"><div class="current-tag">Recommended</div><h3>Pro</h3><p style="font-size:13px;color:var(--p-text-subdued);">For growing stores</p><div class="price">$19<span style="font-size:14px;color:var(--p-text-subdued);">/mo</span></div><ul><li>100 images/month</li><li>HD quality</li><li>All styles & modes</li><li>Priority generation</li></ul><button class="btn btn-primary">Switch to Pro</button></div>
+    <div class="plan-card"><h3>Business</h3><p style="font-size:13px;color:var(--p-text-subdued);">For power sellers</p><div class="price">$49<span style="font-size:14px;color:var(--p-text-subdued);">/mo</span></div><ul><li>500 images/month</li><li>HD quality</li><li>All styles & modes</li><li>Priority generation</li><li>Bulk generation</li><li>API access</li></ul><button class="btn btn-primary">Switch to Business</button></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ===== i18n translations =====
+var t = {
+  zh: {
+    nav_dashboard: "仪表盘", nav_generate: "AI 生成", nav_history: "历史记录", nav_settings: "设置", nav_about: "关于",
+    about_title: "AI 商品图工作室",
+    about_desc: "一款 Shopify 插件，让电商卖家无需摄影师就能用 AI 生成专业商品图。基于 Pollinations.ai (Free)。",
+    feat1: "3 种生成模式：\n标准商品图 / 生活场景 / 背景替换",
+    feat2: "选择 Shopify 商品\n自动填充上下文",
+    feat3: "免费 / 专业 / 企业\n三级定价",
+    feat4: "用量跟踪\n配额系统",
+    feat5: "生成历史\n画廊浏览",
+    feat6: "嵌入 Shopify 管理后台\n原生 Polaris UI",
+    how_title: "怎么用",
+    how_text: "<strong>1. 安装</strong> 从 Shopify App Store 安装插件<br><strong>2. 配置</strong> 填入你的 Pollinations.ai API Key<br><strong>3. 选择</strong> 一个商品并描述想要的场景<br><strong>4. 生成</strong> AI 为你创建专业商品图<br><strong>5. 下载</strong> 上传到你的商品详情页",
+    tech_title: "技术栈",
+    tech_text: "框架: Shopify Remix + React<br>UI: Polaris Design System<br>AI: Pollinations.ai (Free) API<br>数据库: Prisma + SQLite<br>认证: Shopify OAuth 2.0<br>部署: Shopify Cloud / Vercel",
+    dashboard_title: "AI 商品图工作室",
+    dashboard_cta: "生成新图片",
+    dashboard_banner: '本月你还有 2 次免费生成机会。<a href="#" onclick="showPage(\'settings\', document.querySelectorAll(\'nav a\')[3])">升级到 Pro</a> 每月 100 次。',
+    dashboard_credits: "配额使用",
+    dashboard_reset: "剩余 2 次 · 23 天后重置",
+    dashboard_stats: "快速统计",
+    stat_total: "总生成次数",
+    stat_month: "本月",
+    stat_credits: "剩余配额",
+    dashboard_recent: "最近生成",
+    gen_title: "AI 图片生成器",
+    gen_heading: "创建 AI 商品图",
+    gen_product: "选择商品（可选）",
+    gen_product_none: "无（手动描述）",
+    gen_name: "商品名称（可选）",
+    gen_mode: "生成模式",
+    gen_mode_standard: "标准商品图",
+    gen_mode_lifestyle: "生活场景",
+    gen_mode_bg: "背景替换",
+    gen_style: "图片风格",
+    gen_style_natural: "自然写实",
+    gen_style_vivid: "鲜艳大胆",
+    gen_prompt: "描述你想要的商品图",
+    gen_btn: "生成图片",
+    gen_tips_title: "💡 最佳实践提示",
+    gen_tip1: '明确角度："前视图"、"45度角"、"俯拍"',
+    gen_tip2: '描述光线："柔光摄影棚"、"自然日光"、"戏剧性阴影"',
+    gen_tip3: '包含场景："纯白背景"、"现代厨房"、"户外花园"',
+    gen_result: "生成的图片",
+    gen_placeholder: "描述你的商品图，点击生成",
+    gen_ai_intent: "AI 解读：一款高级皮革手提包，悬浮在纯白背景中央",
+    gen_download: "下载图片",
+    gen_open: "查看大图",
+    history_title: "生成历史",
+    history_count: "最近生成 (12)",
+    settings_title: "设置 & 计费",
+    settings_current: "当前套餐",
+    settings_usage: "本月用量",
+    settings_reset: "剩余 2 次 · 23 天后重置",
+    settings_plans: "可选套餐",
+  },
+  en: {
+    nav_dashboard: "Dashboard", nav_generate: "AI Generate", nav_history: "History", nav_settings: "Settings", nav_about: "About",
+    about_title: "AI Product Image Studio",
+    about_desc: "A Shopify App that lets e-commerce sellers generate professional product photos using AI — no photographer needed. Powered by Pollinations.ai (Free).",
+    feat1: "3 generation modes:\nStandard / Lifestyle / Background",
+    feat2: "Select Shopify product\nauto-fill context",
+    feat3: "Free / Pro / Business\npricing tiers",
+    feat4: "Usage tracking\ncredit system",
+    feat5: "Generation history\ngallery view",
+    feat6: "Embedded in Shopify Admin\nPolaris UI native",
+    how_title: "How It Works",
+    how_text: "<strong>1. Install</strong> the app from Shopify App Store<br><strong>2. Connect</strong> your Pollinations.ai API key<br><strong>3. Select</strong> a product & describe the scene<br><strong>4. Generate</strong> — AI creates a pro product photo<br><strong>5. Download</strong> & upload to your product listing",
+    tech_title: "Tech Stack",
+    tech_text: "Framework: Shopify Remix + React<br>UI: Polaris Design System<br>AI: Pollinations.ai (Free) API<br>Database: Prisma + SQLite<br>Auth: Shopify OAuth 2.0<br>Deployment: Shopify Cloud / Vercel",
+    dashboard_title: "AI Product Image Studio",
+    dashboard_cta: "Generate New Image",
+    dashboard_banner: 'You have 2 free generations left this month. <a href="#" onclick="showPage(\'settings\', document.querySelectorAll(\'nav a\')[3])">Upgrade to Pro</a> for 100 generations/month.',
+    dashboard_credits: "Credits Usage",
+    dashboard_reset: "2 remaining · Resets in 23 days",
+    dashboard_stats: "Quick Stats",
+    stat_total: "Total Generations",
+    stat_month: "This Month",
+    stat_credits: "Credits Left",
+    dashboard_recent: "Recent Generations",
+    gen_title: "AI Image Generator",
+    gen_heading: "Create AI Product Image",
+    gen_product: "Select Product (optional)",
+    gen_product_none: "None (describe manually)",
+    gen_name: "Product Name (optional)",
+    gen_mode: "Generation Mode",
+    gen_mode_standard: "Standard Product Photo",
+    gen_mode_lifestyle: "Lifestyle Scene",
+    gen_mode_bg: "Background Replacement",
+    gen_style: "Image Style",
+    gen_style_natural: "Natural & Realistic",
+    gen_style_vivid: "Vivid & Bold",
+    gen_prompt: "Describe the product image you want",
+    gen_btn: "Generate Image",
+    gen_tips_title: "💡 Tips for best results",
+    gen_tip1: 'Be specific about angles: "front view", "45-degree angle", "top-down"',
+    gen_tip2: 'Describe lighting: "soft studio lighting", "natural sunlight", "dramatic shadow"',
+    gen_tip3: 'Include setting: "on white background", "in a modern kitchen", "outdoor garden"',
+    gen_result: "Generated Image",
+    gen_placeholder: "Describe your product image and click Generate",
+    gen_ai_intent: "AI interpretation: A premium leather handbag floating in center on pure white background",
+    gen_download: "Download Image",
+    gen_open: "Open Full Size",
+    history_title: "Generation History",
+    history_count: "Recent Generations (12)",
+    settings_title: "Settings & Billing",
+    settings_current: "Current Plan",
+    settings_usage: "Usage this month",
+    settings_reset: "2 remaining · Resets in 23 days",
+    settings_plans: "Available Plans",
+  },
+};
+
+var lang = "zh";
+
+function switchLang(l) {
+  lang = l;
+  document.getElementById("btn-zh").classList.toggle("active", l === "zh");
+  document.getElementById("btn-en").classList.toggle("active", l === "en");
+  document.querySelectorAll("[data-key]").forEach(function(el) {
+    var key = el.getAttribute("data-key");
+    if (t[l][key]) { el.innerHTML = t[l][key].replace(/\n/g, "<br>"); }
+  });
+}
+
+function showPage(pageId, navEl) {
+  document.querySelectorAll(".page-section").forEach(function(s) { s.classList.remove("active"); });
+  document.getElementById(pageId).classList.add("active");
+  document.querySelectorAll("nav a").forEach(function(a) { a.classList.remove("active"); });
+  if (navEl) navEl.classList.add("active");
+}
+
+function simulateGenerate() {
+  document.getElementById("gen-preview").style.display = "none";
+  var result = document.getElementById("gen-result");
+  var loading = document.createElement("div");
+  loading.className = "img-placeholder";
+  loading.id = "gen-loading";
+  loading.innerHTML = '<div class="spinner"></div><div style="margin-top:12px;color:var(--p-text-subdued);">' + (lang === "zh" ? "AI 正在生成图片..." : "AI is creating your image...") + '</div>';
+  result.parentNode.insertBefore(loading, result);
+  result.style.display = "none";
+  setTimeout(function() {
+    var loadEl = document.getElementById("gen-loading");
+    if (loadEl) loadEl.remove();
+    result.style.display = "block";
+  }, 2000);
+}
+</script>
+</body>
+</html>
