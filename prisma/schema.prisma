@@ -5,9 +5,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
-// enough when changing adapters.
-// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
 datasource db {
   provider = "sqlite"
   url      = "file:dev.sqlite"
@@ -31,4 +28,29 @@ model Session {
   emailVerified       Boolean?  @default(false)
   refreshToken        String?
   refreshTokenExpires DateTime?
+}
+
+model Plan {
+  id          String   @id @default(uuid())
+  shop        String   @unique
+  tier        String   @default("free")
+  credits     Int      @default(5)
+  creditsUsed Int      @default(0)
+  resetAt     DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ImageGeneration {
+  id           String   @id @default(uuid())
+  shop         String
+  prompt       String
+  style        String?
+  size         String   @default("1024x1024")
+  originalUrl  String?
+  resultUrl    String
+  productId    String?
+  productTitle String?
+  status       String   @default("completed")
+  createdAt    DateTime @default(now())
 }
